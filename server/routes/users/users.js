@@ -4,6 +4,7 @@ import {
   createUser,
   getUserAuthToken,
   getMatchingUsers,
+  doesUsernameExists,
 } from '../../controllers/users/users.js';
 import serverLogger from '../../logger/server.js';
 import { AUTH_COOKIE } from '../../configs/login.js';
@@ -11,11 +12,12 @@ import {
   allowAuthenticatedOnly,
   returnIfAuthenticated,
 } from '../middleware/common.js';
+import checksRouter from './checks.js';
 
 const usersRouter = Router({ mergeParams: true });
 
 usersRouter.post('/', returnIfAuthenticated, async (req, res) => {
-  const { email, password, firstName, lastName } = req.body;
+  const { email, password, firstName, lastName, username } = req.body;
 
   const { user } = await getUserByEmail(email);
 
@@ -27,11 +29,22 @@ usersRouter.post('/', returnIfAuthenticated, async (req, res) => {
     return;
   }
 
+  const userNameExists = await doesUsernameExists(username);
+
+  if (userNameExists) {
+    res.status(409).json({
+      code: 2,
+      reason: 'Username already in use',
+    });
+    return;
+  }
+
   const { error, user: newUser } = await createUser(
     email,
     password,
     firstName,
-    lastName
+    lastName,
+    username
   );
 
   if (error) {
@@ -64,11 +77,15 @@ usersRouter.get('/search', allowAuthenticatedOnly, async (req, res) => {
 
   res.status(200).json({
     match: matchList.map((user) => ({
-      firstName: user.first_name,
-      lastName: user.last_name,
-      profilePic: user.profile_pic,
+      firstName: user.dataValues.first_name,
+      lastName: user.dataValues.last_name,
+      profilePic: user.dataValues.profile_pic,
+      username: user.dataValues.username,
+      match: user.dataValues.match,
     })),
   });
 });
+
+usersRouter.use('/checks', checksRouter);
 
 export default usersRouter;
