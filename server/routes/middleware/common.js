@@ -11,12 +11,14 @@ export async function authenticateRequest(req, res, next) {
 
   if (!req.cookies?.[AUTH_COOKIE]) {
     req.userId = null;
+    req.user = null;
     next();
     return;
   }
   try {
     const user = await User.getUserFromToken(req.cookies[AUTH_COOKIE]);
     req.userId = user?.id;
+    req.user = user;
   } catch (error) {
     SERVER_LOGGER.debug(
       `Unable to find user with token ${req.cookies[AUTH_COOKIE]}`
