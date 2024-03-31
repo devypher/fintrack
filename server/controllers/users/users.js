@@ -25,6 +25,29 @@ export async function getUserByEmail(email) {
   return { user };
 }
 
+export async function getUserByUsername(username) {
+  if (!username) {
+    return {
+      error: 'Invalid input',
+    };
+  }
+
+  let user;
+  try {
+    user = await User.getByUsername(username);
+  } catch (error) {
+    return { error };
+  }
+
+  if (!user) {
+    return {
+      error: 'Account does not exist',
+    };
+  }
+
+  return { user };
+}
+
 export async function doesUsernameExists(username) {
   if (!username) {
     return true;
