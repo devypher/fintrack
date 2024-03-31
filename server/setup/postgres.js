@@ -38,6 +38,20 @@ const DB_CONN = {
       postgresLogger.error(error);
     }
   },
+
+  runRawQuery: async function runRawQuery(
+    query,
+    selectQuery = true,
+    options = null
+  ) {
+    const defaultQueryOptions = selectQuery
+      ? { type: Sequelize.QueryTypes.SELECT }
+      : {};
+    return this.sequelize.query(query, {
+      ...defaultQueryOptions,
+      ...(options || {}),
+    });
+  },
 };
 
 export default DB_CONN;
