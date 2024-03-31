@@ -13,6 +13,7 @@ import {
   returnIfAuthenticated,
 } from '../middleware/common.js';
 import checksRouter from './checks.js';
+import friendsRouter from './friends/friends.js';
 
 const usersRouter = Router({ mergeParams: true });
 
@@ -87,5 +88,6 @@ usersRouter.get('/search', allowAuthenticatedOnly, async (req, res) => {
 });
 
 usersRouter.use('/checks', checksRouter);
+usersRouter.use('/:username/friends', allowAuthenticatedOnly, friendsRouter);
 
 export default usersRouter;
