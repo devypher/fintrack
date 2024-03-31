@@ -3,6 +3,7 @@ import database from '../../setup/postgres.js';
 import { generateAuthToken, getPayloadFromToken } from '../../utils/jwt.js';
 import serverLogger from '../../logger/server.js';
 import bcrypt from 'bcrypt';
+import Friend from './Friend.js';
 class User extends Model {
   static addNew(
     firstName,
@@ -150,10 +151,24 @@ User.init(
 );
 
 // Add hooks here
-
 User.beforeCreate(async (user) => {
   if (user.password) {
     user.password = await bcrypt.hash(user.password, 5);
   }
 });
+
+// Add relations
+User.belongsToMany(User, {
+  through: Friend,
+  foreignKey: 'user_1',
+  onDelete: 'CASCADE',
+  as: 'user_1',
+});
+User.belongsToMany(User, {
+  through: Friend,
+  foreignKey: 'user_2',
+  onDelete: 'CASCADE',
+  as: 'user_2',
+});
+
 export default User;
